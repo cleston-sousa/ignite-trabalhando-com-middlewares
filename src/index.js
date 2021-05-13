@@ -10,19 +10,47 @@ app.use(cors());
 const users = [];
 
 function checksExistsUserAccount(request, response, next) {
-  // Complete aqui
+  const { username } = request.headers;
+  const user = users.find((user) => user.username === username);
+  if (!user)
+    return response.status(404).json({ error: "User not found!" });
+  request.user = user;
+  next();
 }
 
 function checksCreateTodosUserAvailability(request, response, next) {
-  // Complete aqui
+  const { user } = request;
+  if (!user.pro && user.todos.length >= 10)
+    return response.status(403).json({ error: "Limit of 10 TODOs reached!" })
+  next();
 }
 
 function checksTodoExists(request, response, next) {
-  // Complete aqui
+  const { username } = request.headers;
+  const { id } = request.params;
+  const user = users.find((user) => user.username === username);
+  if (!user)
+    return response.status(404).json({ error: "User not found!" });
+
+  if (!validate(id))
+    return response.status(400).json({ error: "TODO id invalid!" });
+
+  const todo = user.todos.find(item => item.id === id);
+  if (!todo)
+    return response.status(404).json({ error: "TODO not found!" });
+
+  request.user = user;
+  request.todo = todo;
+  next();
 }
 
 function findUserById(request, response, next) {
-  // Complete aqui
+  const { id } = request.params;
+  const user = users.find(item => item.id === id);
+  if (!user)
+    return response.status(404).json({ error: "User not found!" });
+  request.user = user;
+  next();
 }
 
 app.post('/users', (request, response) => {
